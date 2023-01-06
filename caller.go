@@ -20,7 +20,7 @@ const (
 	minimumCallerDepth = 4
 )
 
-func getCaller(skip int) *runtime.Frame {
+func GetCaller(skip int) *runtime.Frame {
 
 	once.Do(func() {
 		pcs := make([]uintptr, maximumCallerDepth)

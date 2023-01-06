@@ -14,50 +14,50 @@ import (
 type HookFormatter func(*Hook, *logrus.Entry) error
 
 type Hook struct {
-	skipDepth int
-	skipKey   string
-	levels    []logrus.Level
-	formatter HookFormatter
-	release   bool
+	SkipDepth int
+	SkipKey   string
+	LogLevels []logrus.Level
+	Formatter HookFormatter
+	Release   bool
 }
 
 func (hook *Hook) Levels() []logrus.Level {
-	return hook.levels
+	return hook.LogLevels
 }
 
 func (hook *Hook) Fire(entry *logrus.Entry) error {
-	if hook.skipKey != "" {
-		if skipValue, ok := entry.Data[hook.skipKey]; ok {
+	if hook.SkipKey != "" {
+		if skipValue, ok := entry.Data[hook.SkipKey]; ok {
 			if skipInt, ok := skipValue.(int); ok {
-				hook.skipDepth = skipInt
+				hook.SkipDepth = skipInt
 			}
-			if hook.release {
-				delete(entry.Data, hook.skipKey)
+			if hook.Release {
+				delete(entry.Data, hook.SkipKey)
 			}
 		}
 	}
-	return hook.formatter(hook, entry)
+	return hook.Formatter(hook, entry)
 }
 
 func NewHook(options ...Option) *Hook {
 	hook := &Hook{
-		formatter: fileFormatter,
-		release:   true,
+		Formatter: fileFormatter,
+		Release:   true,
 	}
 
 	for _, option := range options {
 		option(hook)
 	}
 
-	if len(hook.levels) == 0 {
-		hook.levels = logrus.AllLevels
+	if len(hook.LogLevels) == 0 {
+		hook.LogLevels = logrus.AllLevels
 	}
 
 	return hook
 }
 
 func fileFormatter(hook *Hook, entry *logrus.Entry) error {
-	f := getCaller(hook.skipDepth)
+	f := GetCaller(hook.SkipDepth)
 	if f != nil {
 		entry.Data["file"] = fmt.Sprintf("%s:%d", f.File, f.Line)
 	}
